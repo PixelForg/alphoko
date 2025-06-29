@@ -1,0 +1,12 @@
+[package]
+name = "alphoko"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = { version = "0.31.1", default-features = false, features = [
+    "wayland",
+    "wgpu",
+    "default_fonts",
+] }
+rfd = { version = "0.15.3", default-features = false, features = ["gtk3"] }
