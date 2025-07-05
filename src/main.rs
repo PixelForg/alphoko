@@ -12,6 +12,9 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Alphoko - A fast manga panel searcher",
         options,
-        Box::new(|_| Ok(Box::<MyApp>::default())),
+        Box::new(|cc| {
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+            Ok(Box::<MyApp>::default())
+        }),
     )
 }
