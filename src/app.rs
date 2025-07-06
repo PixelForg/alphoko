@@ -119,19 +119,26 @@ impl MyApp {
                 ui.add(image);
                 ui.label("Enter manga panel text");
                 ui.text_edit_multiline(&mut self.added_image_text);
-                ui.horizontal_centered(|ui| {
+                ui.horizontal(|ui| {
                     ui.add_enabled_ui(!self.added_image_text.is_empty(), |ui| {
+                        let file_name = self.added_image_file_path.split("/").into_iter().last();
                         if ui.button("Save image").clicked() {
                             let _ = fs::copy(
                                 &self.added_image_file_path,
-                                format!("{}/image.jpg", MANGA_PANELS_SAVE_FOLDER),
+                                format!(
+                                    "{}/{}",
+                                    MANGA_PANELS_SAVE_FOLDER,
+                                    file_name.unwrap_or("image.jpg")
+                                ),
                             );
-                            self.added_image_file_path = "".to_owned();
+                            self.added_image_file_path.clear();
+                            self.added_image_text.clear();
                             ctx.forget_image(&uri);
                         }
                     });
                     if ui.button("Close without saving").clicked() {
-                        self.added_image_file_path = "".to_owned();
+                        self.added_image_file_path.clear();
+                        self.added_image_text.clear();
                         ctx.forget_image(&uri);
                     }
                 });
