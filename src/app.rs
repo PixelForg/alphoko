@@ -40,7 +40,7 @@ impl Default for MyApp {
 }
 
 impl MyApp {
-    fn draw_search_bar(&mut self, ui: &mut Ui, width: f32, search_bar_option: SearchBarText) {
+    fn draw_default_frame(&mut self) -> Frame {
         Frame::new()
             .stroke(Stroke {
                 width: 2.0,
@@ -52,6 +52,9 @@ impl MyApp {
                 sw: 10,
                 se: 10,
             })
+    }
+    fn draw_search_bar(&mut self, ui: &mut Ui, width: f32, search_bar_option: SearchBarText) {
+        self.draw_default_frame()
             .fill(Color32::from_rgb(23, 23, 23))
             .show(ui, |ui| {
                 let search_text_to_edit = match search_bar_option {
@@ -73,17 +76,7 @@ impl MyApp {
     }
 
     fn draw_add_image_button(&mut self, ui: &mut Ui, width: f32) {
-        Frame::new()
-            .stroke(Stroke {
-                width: 2.0,
-                color: Color32::from_rgb(37, 37, 38),
-            })
-            .corner_radius(CornerRadius {
-                nw: 10,
-                ne: 10,
-                sw: 10,
-                se: 10,
-            })
+        self.draw_default_frame()
             .fill(Color32::WHITE)
             .show(ui, |ui| {
                 ui.set_width(width);
