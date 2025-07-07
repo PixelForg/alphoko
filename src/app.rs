@@ -5,21 +5,38 @@ use eframe::egui::{
     RichText, Stroke, TextEdit, TopBottomPanel, Ui, Visuals,
 };
 use rfd::FileDialog;
+use rusqlite::Connection;
+
+use crate::db::{create_tables, start_connection};
 
 const TOP_PANEL_ELEMENTS_HEIGHT: f32 = 40.0;
-const MANGA_PANELS_SAVE_FOLDER: &str = "/home/pixelforg/Pictures/alphoko";
+const MANGA_PANELS_SAVE_FOLDER: &str = "/home/pixelforg/Pictures/alphoko"; // TODO Remove this
 
 enum SearchBarText {
     Keywords(String),
     MangaName(String),
 }
 
-#[derive(Default)]
 pub struct MyApp {
     keywords_search_text: String,
     manga_name_search_text: String,
     added_image_file_path: String,
     added_image_text: String,
+    database_connection: Connection,
+}
+
+impl Default for MyApp {
+    fn default() -> Self {
+        let connection = start_connection().expect("Failed to start connection");
+        create_tables(&connection).expect("Failed to create tables");
+        Self {
+            keywords_search_text: Default::default(),
+            manga_name_search_text: Default::default(),
+            added_image_file_path: Default::default(),
+            added_image_text: Default::default(),
+            database_connection: connection,
+        }
+    }
 }
 
 impl MyApp {
