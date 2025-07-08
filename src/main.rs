@@ -1,5 +1,10 @@
 mod app;
 mod db;
+mod ui {
+    pub mod central_panel;
+    pub mod constants;
+    pub mod top_panel;
+}
 
 use crate::app::MyApp;
 use eframe::egui;
