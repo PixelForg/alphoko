@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, params};
 
 pub fn start_connection() -> Result<Connection> {
     Connection::open("manga-panels.db")
@@ -11,9 +11,7 @@ pub fn create_tables(database_connection: &Connection) -> Result<()> {
             manga_panel_file_path TEXT NOT NULL UNIQUE,
             manga_panel_text TEXT NOT NULL,
             number_of_times_copied INTEGER,
-            manga_name TEXT NOT NULL UNIQUE,
-            manga_panel_width INTEGER,
-            manga_panel_height INTEGER
+            manga_name TEXT NOT NULL
         )",
         (),
     )?;
@@ -26,6 +24,28 @@ pub fn create_tables(database_connection: &Connection) -> Result<()> {
             )",
             (),
         )?;
+    }
+    Ok(())
+}
+
+pub fn add_manga_panel_to_db(
+    database_connection: &Connection,
+    manga_panel_file_path: &String,
+    manga_panel_text: &String,
+    manga_name: &String,
+) -> Result<()> {
+    let res = database_connection.execute(
+        "INSERT INTO manga_panels (
+            manga_panel_file_path, 
+            manga_panel_text, 
+            number_of_times_copied,
+            manga_name
+        ) values (?1, ?2, ?3, ?4)",
+        params![manga_panel_file_path, manga_panel_text, 0, manga_name],
+    );
+    match res {
+        Ok(count) => println!("Inserted, rows affected: {}", count),
+        Err(e) => println!("insert error: {}", e),
     }
     Ok(())
 }
