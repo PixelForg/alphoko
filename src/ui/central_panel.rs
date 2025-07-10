@@ -1,8 +1,9 @@
 use std::fs;
 
-use eframe::egui::{self, CentralPanel, Image, Modal, TextEdit, Vec2};
+use eframe::egui::{self, CentralPanel, Image, Modal, TextEdit, Ui, Vec2};
 
-use crate::{app::MyApp, db::add_manga_panel_to_db, ui::constants::MANGA_PANELS_SAVE_FOLDER};
+use crate::db::{MangaPanels, add_manga_panel_to_db, retrieve_manga_panels_from_db};
+use crate::{app::MyApp, ui::constants::MANGA_PANELS_SAVE_FOLDER};
 
 impl MyApp {
     fn clear_image_state(&mut self, ctx: &egui::Context, image_uri: &String) {
@@ -52,11 +53,49 @@ impl MyApp {
         }
     }
 
+    fn draw_manga_panels_gallery(&mut self, ui: &mut Ui) {
+        let manga_panels = retrieve_manga_panels_from_db(&self.database_connection);
+        match manga_panels {
+            Ok(manga_panels_vec) => {
+                ui.horizontal(|ui| {
+                    for manga_panel in manga_panels_vec {
+                        let MangaPanels {
+                            manga_panel_file_path,
+                            manga_panel_text,
+                            number_of_times_copied,
+                            manga_name,
+                        } = manga_panel;
+                        let uri = format!("file://{}", &manga_panel_file_path);
+                        let image = Image::new(&uri)
+                            // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
+                            .fit_to_original_size(1.0)
+                            .max_width(200.0);
+                        ui.add(image);
+                        println!(
+                            "{},{},{},{}",
+                            manga_panel_file_path,
+                            manga_panel_text,
+                            number_of_times_copied,
+                            manga_name
+                        );
+                    }
+                });
+            }
+            Err(err) => println!("{}", err),
+        }
+    }
+
     pub fn draw_central_panel(&mut self, ctx: &egui::Context) {
         CentralPanel::default().show(ctx, |ui| {
             self.draw_add_manga_panel_modal(ctx);
             ui.label(&self.keywords_search_text);
             ui.label(&self.manga_name_search_text);
+            /*
+            Initially I had put this under a condition and I was negating the
+            condition when I was done showing the images, however that just made
+            the images disappear super fast, since this is immediate mode UI
+            */
+            self.draw_manga_panels_gallery(ui)
         });
     }
 }
