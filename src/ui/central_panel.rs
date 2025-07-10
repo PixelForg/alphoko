@@ -57,7 +57,7 @@ impl MyApp {
         let manga_panels = retrieve_manga_panels_from_db(&self.database_connection);
         match manga_panels {
             Ok(manga_panels_vec) => {
-                ui.horizontal(|ui| {
+                ui.horizontal_wrapped(|ui| {
                     for manga_panel in manga_panels_vec {
                         let MangaPanels {
                             manga_panel_file_path,
@@ -69,7 +69,7 @@ impl MyApp {
                         let image = Image::new(&uri)
                             // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
                             .fit_to_original_size(1.0)
-                            .max_width(200.0);
+                            .max_height(200.0);
                         ui.add(image);
                         println!(
                             "{},{},{},{}",
