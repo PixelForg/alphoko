@@ -1,6 +1,6 @@
 use eframe::egui::{
     self, Align, Button, Color32, CornerRadius, Frame, Layout, RichText, Stroke, TextEdit,
-    TopBottomPanel, Ui,
+    TopBottomPanel, Ui, vec2,
 };
 use rfd::FileDialog;
 
@@ -50,18 +50,25 @@ impl MyApp {
             .fill(Color32::WHITE)
             .show(ui, |ui| {
                 ui.set_width(width);
-                ui.set_height(TOP_PANEL_ELEMENTS_HEIGHT);
-                if ui
-                    .add(
-                        Button::new(RichText::new("Upload manga panel").color(Color32::BLACK))
+                ui.vertical_centered(|ui| {
+                    if ui
+                        .add(
+                            Button::new(
+                                RichText::new("Upload manga panel")
+                                    .size(13.0)
+                                    .color(Color32::BLACK),
+                            )
+                            .min_size(vec2(120.0, TOP_PANEL_ELEMENTS_HEIGHT))
                             .frame(false),
-                    )
-                    .clicked()
-                {
-                    if let Some(added_image_file_path) = FileDialog::new().pick_file() {
-                        self.added_image_file_path = added_image_file_path.display().to_string();
+                        )
+                        .clicked()
+                    {
+                        if let Some(added_image_file_path) = FileDialog::new().pick_file() {
+                            self.added_image_file_path =
+                                added_image_file_path.display().to_string();
+                        }
                     }
-                }
+                })
             });
     }
 
