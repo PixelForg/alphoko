@@ -50,6 +50,7 @@ impl MyApp {
             .fill(Color32::WHITE)
             .show(ui, |ui| {
                 ui.set_width(width);
+                // This is necessary to center text in button
                 ui.vertical_centered(|ui| {
                     if ui
                         .add(
