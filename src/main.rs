@@ -2,6 +2,7 @@ mod app;
 mod db;
 mod ui {
     pub mod central_panel;
+    pub mod common;
     pub mod constants;
     pub mod top_panel;
 }

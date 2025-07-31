@@ -2,11 +2,6 @@ use crate::db::{create_tables, start_connection};
 use eframe::egui::{self, Color32, Visuals};
 use rusqlite::Connection;
 
-pub enum SearchBarText {
-    Keywords(String),
-    MangaName(String),
-}
-
 pub struct MyApp {
     pub keywords_search_text: String,
     pub manga_name_search_text: String,
