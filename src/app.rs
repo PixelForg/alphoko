@@ -8,6 +8,7 @@ pub struct MyApp {
     pub added_image_file_path: String,
     pub added_image_text: String,
     pub database_connection: Connection,
+    pub add_manga_panel_modal_manga_name: String,
 }
 
 impl Default for MyApp {
@@ -20,6 +21,7 @@ impl Default for MyApp {
             added_image_file_path: Default::default(),
             added_image_text: Default::default(),
             database_connection: connection,
+            add_manga_panel_modal_manga_name: Default::default(),
         }
     }
 }

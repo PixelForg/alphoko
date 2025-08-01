@@ -1,8 +1,9 @@
 use std::fs;
 
-use eframe::egui::{self, CentralPanel, Image, Modal, TextEdit, Ui, Vec2};
+use eframe::egui::{self, Align, CentralPanel, Image, Layout, Modal, TextEdit, Ui, Vec2};
 
 use crate::db::{MangaPanels, add_manga_panel_to_db, retrieve_manga_panels_from_db};
+use crate::ui::common::draw_search_bar;
 use crate::{app::MyApp, ui::constants::MANGA_PANELS_SAVE_FOLDER};
 
 impl MyApp {
@@ -17,37 +18,55 @@ impl MyApp {
             Modal::new("modal".into()).show(ctx, |ui| {
                 ui.set_width(500.0);
                 ui.vertical_centered(|ui| ui.heading("Add manga panel"));
-                let uri = format!("file://{}", &self.added_image_file_path);
-                let image = Image::new(&uri).max_size(Vec2 { x: 200.0, y: 200.0 });
-                ui.add(image);
-                ui.label("Enter manga panel text");
-                ui.add(TextEdit::multiline(&mut self.added_image_text).desired_width(200.0));
                 ui.horizontal(|ui| {
-                    ui.add_enabled_ui(!self.added_image_text.is_empty(), |ui| {
-                        let file_name = self.added_image_file_path.split("/").into_iter().last();
-                        if ui.button("Save image").clicked() {
-                            let manga_panel_file_path = format!(
-                                "{}/{}",
-                                MANGA_PANELS_SAVE_FOLDER,
-                                file_name.unwrap_or("image.jpg")
-                            );
-                            let _ =
-                                match fs::copy(&self.added_image_file_path, &manga_panel_file_path)
-                                {
-                                    Ok(_) => add_manga_panel_to_db(
-                                        &self.database_connection,
+                    ui.vertical(|ui| {
+                        let uri = format!("file://{}", &self.added_image_file_path);
+                        let image = Image::new(&uri)
+                            .fit_to_original_size(1.0)
+                            .max_size(Vec2 { x: 200.0, y: 200.0 });
+                        ui.add(image);
+                        ui.label("Enter manga panel text");
+                        ui.add(
+                            TextEdit::multiline(&mut self.added_image_text).desired_width(200.0),
+                        );
+                        ui.horizontal(|ui| {
+                            ui.add_enabled_ui(!self.added_image_text.is_empty(), |ui| {
+                                let file_name =
+                                    self.added_image_file_path.split("/").into_iter().last();
+                                if ui.button("Save image").clicked() {
+                                    let manga_panel_file_path = format!(
+                                        "{}/{}",
+                                        MANGA_PANELS_SAVE_FOLDER,
+                                        file_name.unwrap_or("image.jpg")
+                                    );
+                                    let _ = match fs::copy(
+                                        &self.added_image_file_path,
                                         &manga_panel_file_path,
-                                        &self.added_image_text,
-                                        &"Yokohama Kaidashii Kikou".to_owned(), // TODO: Need to add combobox with searhc for manga names
-                                    ),
-                                    Err(_) => panic!("Failed to copy file"),
-                                };
-                            self.clear_image_state(ctx, &uri);
-                        }
+                                    ) {
+                                        Ok(_) => add_manga_panel_to_db(
+                                            &self.database_connection,
+                                            &manga_panel_file_path,
+                                            &self.added_image_text,
+                                            &"Yokohama Kaidashii Kikou".to_owned(), // TODO: Need to add combobox with searhc for manga names
+                                        ),
+                                        Err(_) => panic!("Failed to copy file"),
+                                    };
+                                    self.clear_image_state(ctx, &uri);
+                                }
+                            });
+                            if ui.button("Close without saving").clicked() {
+                                self.clear_image_state(ctx, &uri);
+                            }
+                        });
                     });
-                    if ui.button("Close without saving").clicked() {
-                        self.clear_image_state(ctx, &uri);
-                    }
+                    ui.with_layout(Layout::top_down(Align::TOP), |ui| {
+                        draw_search_bar(
+                            ui,
+                            300.0,
+                            &mut self.add_manga_panel_modal_manga_name,
+                            &"Add manga name".to_owned(),
+                        )
+                    })
                 });
             });
         }
