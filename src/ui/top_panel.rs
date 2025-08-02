@@ -8,7 +8,7 @@ use crate::{
     app::MyApp,
     ui::{
         common::{draw_default_frame, draw_search_bar, get_fuzzy_search_options},
-        constants::TOP_PANEL_ELEMENTS_HEIGHT,
+        constants::{AUTOCOMPLETE_POPUP_MAX_HEIGHT, TOP_PANEL_ELEMENTS_HEIGHT},
     },
 };
 
@@ -44,10 +44,12 @@ impl MyApp {
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     let window_width = ui.available_rect_before_wrap().width();
+                    let manga_keywords_search_bar_width = window_width * 0.50;
+                    let manga_name_search_bar_width = window_width * 0.35;
                     ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                         let manga_keywords_search_bar_response = draw_search_bar(
                             ui,
-                            window_width * 0.50,
+                            manga_keywords_search_bar_width,
                             &mut self.keywords_search_text,
                             &"Enter Keywords".to_owned(),
                             true,
@@ -64,7 +66,8 @@ impl MyApp {
                                 )
                                 .close_behavior(PopupCloseBehavior::IgnoreClicks)
                                 .show(|ui| {
-                                    ui.set_min_width(310.0);
+                                    ui.set_min_width(manga_keywords_search_bar_width);
+                                    ui.set_max_height(AUTOCOMPLETE_POPUP_MAX_HEIGHT);
                                     ScrollArea::vertical().show(ui, |ui| {
                                         for manga_panel_keywords in manga_keywords_list_with_score {
                                             if ui.button(&manga_panel_keywords.1).clicked() {
@@ -76,7 +79,7 @@ impl MyApp {
                         }
                         let manga_name_search_bar_response = draw_search_bar(
                             ui,
-                            window_width * 0.35,
+                            manga_name_search_bar_width,
                             &mut self.manga_name_search_text,
                             &"Enter Keywords".to_owned(),
                             true,
@@ -93,7 +96,8 @@ impl MyApp {
                                 )
                                 .close_behavior(PopupCloseBehavior::IgnoreClicks)
                                 .show(|ui| {
-                                    ui.set_min_width(310.0);
+                                    ui.set_min_width(manga_name_search_bar_width);
+                                    ui.set_max_height(AUTOCOMPLETE_POPUP_MAX_HEIGHT);
                                     ScrollArea::vertical().show(ui, |ui| {
                                         for manga_name in manga_names_with_score {
                                             if ui.button(&manga_name.1).clicked() {
