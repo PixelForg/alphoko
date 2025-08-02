@@ -3,13 +3,11 @@ use std::fs;
 use eframe::egui::{
     self, Align, CentralPanel, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
 };
-use fuzzy_matcher::FuzzyMatcher;
-use fuzzy_matcher::skim::SkimMatcherV2;
 
 use crate::db::{
     MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db, retrieve_manga_panels_from_db,
 };
-use crate::ui::common::draw_search_bar;
+use crate::ui::common::{draw_search_bar, get_manga_names_options};
 use crate::{app::MyApp, ui::constants::MANGA_PANELS_SAVE_FOLDER};
 
 impl MyApp {
@@ -26,21 +24,14 @@ impl MyApp {
     }
 
     fn draw_manga_names_buttons_list(&mut self, ui: &mut Ui) {
-        let matcher = SkimMatcherV2::default();
-        let choices = &self.manga_names_list;
-        let mut manga_names_with_score: Vec<(i64, &String)> = choices
-            .iter()
-            .filter_map(|item| {
-                matcher
-                    .fuzzy_match(item, &self.add_manga_panel_modal_manga_name)
-                    .map(|score| (score, item))
-            })
-            .collect();
-        manga_names_with_score.sort_by(|a, b| b.0.cmp(&a.0));
+        let manga_names_with_score = get_manga_names_options(
+            &self.manga_names_list,
+            &self.add_manga_panel_modal_manga_name,
+        );
         ScrollArea::vertical().show(ui, |ui| {
             for manga_name in manga_names_with_score {
-                if ui.button(manga_name.1).clicked() {
-                    self.add_manga_panel_modal_manga_name = manga_name.1.clone();
+                if ui.button(&manga_name.1).clicked() {
+                    self.add_manga_panel_modal_manga_name = manga_name.1;
                 }
             }
         });
@@ -99,6 +90,7 @@ impl MyApp {
                             300.0,
                             &mut self.add_manga_panel_modal_manga_name,
                             &"Add manga name".to_owned(),
+                            false,
                         );
                         self.draw_manga_names_buttons_list(ui);
                     })

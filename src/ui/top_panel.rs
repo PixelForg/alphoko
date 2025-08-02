@@ -1,4 +1,7 @@
-use eframe::egui::{self, Align, Button, Color32, Layout, RichText, TopBottomPanel, Ui, vec2};
+use eframe::egui::{
+    self, Align, Button, Color32, Layout, Popup, PopupCloseBehavior, RichText, TopBottomPanel, Ui,
+    vec2,
+};
 use rfd::FileDialog;
 
 use crate::{
@@ -47,13 +50,24 @@ impl MyApp {
                             window_width * 0.50,
                             &mut self.keywords_search_text,
                             &"Enter Keywords".to_owned(),
+                            false,
                         );
-                        draw_search_bar(
+                        let search_bar_response = draw_search_bar(
                             ui,
                             window_width * 0.35,
                             &mut self.manga_name_search_text,
                             &"Enter Keywords".to_owned(),
+                            true,
                         );
+                        if let Some(response) = search_bar_response {
+                            Popup::menu(&response)
+                                .open(!self.manga_name_search_text.is_empty())
+                                .close_behavior(PopupCloseBehavior::IgnoreClicks)
+                                .show(|ui| {
+                                    ui.set_min_width(310.0);
+                                    ui.label("This popup opened kek");
+                                });
+                        }
                         self.draw_add_image_button(ui, window_width * 0.10);
                     })
                 });
