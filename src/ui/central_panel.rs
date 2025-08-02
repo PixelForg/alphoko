@@ -131,7 +131,7 @@ impl MyApp {
                     });
                 });
 
-                if self.keywords_search_text.is_empty() {
+                if self.keywords_search_text.is_empty() && self.added_image_file_path.is_empty() {
                     ctx.forget_all_images();
                 }
             }
