@@ -1,6 +1,8 @@
-use std::fs;
+use std::{f32, fs};
 
-use eframe::egui::{self, Align, CentralPanel, Image, Layout, Modal, TextEdit, Ui, Vec2};
+use eframe::egui::{
+    self, Align, CentralPanel, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
+};
 
 use crate::db::{MangaPanels, add_manga_panel_to_db, retrieve_manga_panels_from_db};
 use crate::ui::common::draw_search_bar;
@@ -76,28 +78,31 @@ impl MyApp {
         let manga_panels = retrieve_manga_panels_from_db(&self.database_connection);
         match manga_panels {
             Ok(manga_panels_vec) => {
-                ui.horizontal_wrapped(|ui| {
-                    for manga_panel in manga_panels_vec {
-                        let MangaPanels {
-                            manga_panel_file_path,
-                            manga_panel_text,
-                            number_of_times_copied,
-                            manga_name,
-                        } = manga_panel;
-                        let uri = format!("file://{}", &manga_panel_file_path);
-                        let image = Image::new(&uri)
-                            // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
-                            .fit_to_original_size(1.0)
-                            .max_height(200.0);
-                        ui.add(image);
-                        println!(
-                            "{},{},{},{}",
-                            manga_panel_file_path,
-                            manga_panel_text,
-                            number_of_times_copied,
-                            manga_name
-                        );
-                    }
+                // TODO : Fix scrollbar
+                ScrollArea::vertical().show(ui, |ui| {
+                    ui.horizontal_wrapped(|ui| {
+                        for manga_panel in manga_panels_vec {
+                            let MangaPanels {
+                                manga_panel_file_path,
+                                manga_panel_text,
+                                number_of_times_copied,
+                                manga_name,
+                            } = manga_panel;
+                            let uri = format!("file://{}", &manga_panel_file_path);
+                            let image = Image::new(&uri)
+                                // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
+                                .fit_to_original_size(1.0)
+                                .max_height(200.0);
+                            ui.add(image);
+                            println!(
+                                "{},{},{},{}",
+                                manga_panel_file_path,
+                                manga_panel_text,
+                                number_of_times_copied,
+                                manga_name
+                            );
+                        }
+                    });
                 });
             }
             Err(err) => println!("{}", err),
