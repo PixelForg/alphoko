@@ -3,6 +3,8 @@ use std::fs;
 use eframe::egui::{
     self, Align, CentralPanel, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
 };
+use fuzzy_matcher::FuzzyMatcher;
+use fuzzy_matcher::skim::SkimMatcherV2;
 
 use crate::db::{
     MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db, retrieve_manga_panels_from_db,
@@ -24,10 +26,21 @@ impl MyApp {
     }
 
     fn draw_manga_names_buttons_list(&mut self, ui: &mut Ui) {
+        let matcher = SkimMatcherV2::default();
+        let choices = &self.manga_names_list;
+        let mut manga_names_with_score: Vec<(i64, &String)> = choices
+            .iter()
+            .filter_map(|item| {
+                matcher
+                    .fuzzy_match(item, &self.add_manga_panel_modal_manga_name)
+                    .map(|score| (score, item))
+            })
+            .collect();
+        manga_names_with_score.sort_by(|a, b| b.0.cmp(&a.0));
         ScrollArea::vertical().show(ui, |ui| {
-            for manga_name in &self.manga_names_list {
-                if ui.button(manga_name).clicked() {
-                    self.add_manga_panel_modal_manga_name = manga_name.clone();
+            for manga_name in manga_names_with_score {
+                if ui.button(manga_name.1).clicked() {
+                    self.add_manga_panel_modal_manga_name = manga_name.1.clone();
                 }
             }
         });

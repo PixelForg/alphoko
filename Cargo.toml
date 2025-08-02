@@ -9,3 +9,4 @@ egui_extras = { version = "0.32.0", features = ["default", "all_loaders"] }
 rfd = { version = "0.15.3" }
 image = { version = "0.25.6", features = ["jpeg", "png"] }
 rusqlite = { version = "0.37.0", features = ["bundled"] }
+fuzzy-matcher = { version = "0.3.7" }

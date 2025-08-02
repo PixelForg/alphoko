@@ -1,5 +1,6 @@
 use rusqlite::{Connection, Result, params};
 
+#[allow(dead_code)]
 pub struct MangaPanels {
     pub manga_panel_file_path: String,
     pub manga_panel_text: String,
