@@ -63,17 +63,28 @@ pub fn add_manga_panel_to_db(
     Ok(())
 }
 
-pub fn retrieve_manga_panels_from_db(database_connection: &Connection) -> Result<Vec<MangaPanels>> {
+pub fn retrieve_manga_panels_from_db(
+    database_connection: &Connection,
+    manga_panel_text_to_search: &String,
+    manga_panel_name_to_search: &String,
+) -> Result<Vec<MangaPanels>> {
     let mut statement = database_connection.prepare_cached(
-        "SELECT manga_panel_file_path, manga_panel_text, number_of_times_copied, manga_name FROM manga_panels")?;
-    let manga_panels_from_db = statement.query_map([], |row| {
-        Ok(MangaPanels {
-            manga_panel_file_path: row.get(0)?,
-            manga_panel_text: row.get(1)?,
-            number_of_times_copied: row.get(2)?,
-            manga_name: row.get(3)?,
-        })
-    })?;
+        "SELECT manga_panel_file_path, manga_panel_text, number_of_times_copied, manga_name
+        FROM manga_panels
+        WHERE manga_panel_text = ?1
+        AND (?2 = '' OR manga_name = ?2)",
+    )?;
+    let manga_panels_from_db = statement.query_map(
+        [manga_panel_text_to_search, manga_panel_name_to_search],
+        |row| {
+            Ok(MangaPanels {
+                manga_panel_file_path: row.get(0)?,
+                manga_panel_text: row.get(1)?,
+                number_of_times_copied: row.get(2)?,
+                manga_name: row.get(3)?,
+            })
+        },
+    )?;
 
     let mut manga_panels_to_show = Vec::new();
 

@@ -1,7 +1,7 @@
 use std::fs;
 
 use eframe::egui::{
-    self, Align, CentralPanel, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
+    self, Align, CentralPanel, Context, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
 };
 
 use crate::db::{
@@ -105,14 +105,18 @@ impl MyApp {
         }
     }
 
-    fn draw_manga_panels_gallery(&mut self, ui: &mut Ui) {
-        let manga_panels = retrieve_manga_panels_from_db(&self.database_connection);
+    fn draw_manga_panels_gallery(&mut self, ui: &mut Ui, ctx: &Context) {
+        let manga_panels = retrieve_manga_panels_from_db(
+            &self.database_connection,
+            &self.keywords_search_text,
+            &self.manga_name_search_text,
+        );
         match manga_panels {
             Ok(manga_panels_vec) => {
                 // TODO : Fix scrollbar
                 ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
-                        for manga_panel in manga_panels_vec {
+                        for manga_panel in &manga_panels_vec {
                             let MangaPanels {
                                 manga_panel_file_path,
                                 ..
@@ -126,12 +130,16 @@ impl MyApp {
                         }
                     });
                 });
+
+                if self.keywords_search_text.is_empty() {
+                    ctx.forget_all_images();
+                }
             }
             Err(err) => println!("{}", err),
         }
     }
 
-    pub fn draw_central_panel(&mut self, ctx: &egui::Context) {
+    pub fn draw_central_panel(&mut self, ctx: &Context) {
         CentralPanel::default().show(ctx, |ui| {
             self.draw_add_manga_panel_modal(ctx);
             ui.label(&self.keywords_search_text);
@@ -141,7 +149,7 @@ impl MyApp {
             condition when I was done showing the images, however that just made
             the images disappear super fast, since this is immediate mode UI
             */
-            self.draw_manga_panels_gallery(ui)
+            self.draw_manga_panels_gallery(ui, ctx);
         });
     }
 }
