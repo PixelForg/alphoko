@@ -14,6 +14,8 @@ pub struct MyApp {
     pub add_manga_panel_modal_manga_name: String,
     pub manga_names_list: Vec<String>,
     pub manga_panels_text_list: Vec<String>,
+    pub manga_keyword_was_chosen: bool,
+    pub manga_name_was_chosen: bool,
 }
 
 impl Default for MyApp {
@@ -31,6 +33,8 @@ impl Default for MyApp {
             add_manga_panel_modal_manga_name: Default::default(),
             manga_names_list: manga_names_list.unwrap_or(Default::default()),
             manga_panels_text_list: manga_panels_text_list.unwrap_or(Default::default()),
+            manga_keyword_was_chosen: false,
+            manga_name_was_chosen: false,
         }
     }
 }
