@@ -1,31 +1,49 @@
-use std::{f32, fs};
+use std::fs;
 
 use eframe::egui::{
     self, Align, CentralPanel, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
 };
 
-use crate::db::{MangaPanels, add_manga_panel_to_db, retrieve_manga_panels_from_db};
+use crate::db::{
+    MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db, retrieve_manga_panels_from_db,
+};
 use crate::ui::common::draw_search_bar;
 use crate::{app::MyApp, ui::constants::MANGA_PANELS_SAVE_FOLDER};
 
 impl MyApp {
+    fn refresh_manga_names_list_from_db(&mut self) {
+        self.manga_names_list =
+            retrieve_manga_names_from_db(&self.database_connection).unwrap_or(Default::default());
+    }
+
     fn clear_image_state(&mut self, ctx: &egui::Context, image_uri: &String) {
         self.added_image_file_path.clear();
         self.added_image_text.clear();
+        self.add_manga_panel_modal_manga_name.clear();
         ctx.forget_image(image_uri);
+    }
+
+    fn draw_manga_names_buttons_list(&mut self, ui: &mut Ui) {
+        ScrollArea::vertical().show(ui, |ui| {
+            for manga_name in &self.manga_names_list {
+                if ui.button(manga_name).clicked() {
+                    self.add_manga_panel_modal_manga_name = manga_name.clone();
+                }
+            }
+        });
     }
 
     fn draw_add_manga_panel_modal(&mut self, ctx: &egui::Context) {
         if !self.added_image_file_path.is_empty() {
             Modal::new("modal".into()).show(ctx, |ui| {
-                ui.set_width(500.0);
+                ui.set_width(700.0);
                 ui.vertical_centered(|ui| ui.heading("Add manga panel"));
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {
                         let uri = format!("file://{}", &self.added_image_file_path);
                         let image = Image::new(&uri)
                             .fit_to_original_size(1.0)
-                            .max_size(Vec2 { x: 200.0, y: 200.0 });
+                            .max_size(Vec2 { x: 400.0, y: 400.0 });
                         ui.add(image);
                         ui.label("Enter manga panel text");
                         ui.add(
@@ -49,10 +67,11 @@ impl MyApp {
                                             &self.database_connection,
                                             &manga_panel_file_path,
                                             &self.added_image_text,
-                                            &"Yokohama Kaidashii Kikou".to_owned(), // TODO: Need to add combobox with searhc for manga names
+                                            &self.add_manga_panel_modal_manga_name,
                                         ),
                                         Err(_) => panic!("Failed to copy file"),
                                     };
+                                    self.refresh_manga_names_list_from_db();
                                     self.clear_image_state(ctx, &uri);
                                 }
                             });
@@ -67,7 +86,8 @@ impl MyApp {
                             300.0,
                             &mut self.add_manga_panel_modal_manga_name,
                             &"Add manga name".to_owned(),
-                        )
+                        );
+                        self.draw_manga_names_buttons_list(ui);
                     })
                 });
             });
@@ -84,9 +104,7 @@ impl MyApp {
                         for manga_panel in manga_panels_vec {
                             let MangaPanels {
                                 manga_panel_file_path,
-                                manga_panel_text,
-                                number_of_times_copied,
-                                manga_name,
+                                ..
                             } = manga_panel;
                             let uri = format!("file://{}", &manga_panel_file_path);
                             let image = Image::new(&uri)
@@ -94,13 +112,6 @@ impl MyApp {
                                 .fit_to_original_size(1.0)
                                 .max_height(200.0);
                             ui.add(image);
-                            println!(
-                                "{},{},{},{}",
-                                manga_panel_file_path,
-                                manga_panel_text,
-                                number_of_times_copied,
-                                manga_name
-                            );
                         }
                     });
                 });

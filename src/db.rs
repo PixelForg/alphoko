@@ -84,7 +84,7 @@ pub fn retrieve_manga_panels_from_db(database_connection: &Connection) -> Result
 
 pub fn retrieve_manga_names_from_db(database_connection: &Connection) -> Result<Vec<String>> {
     let mut statement =
-        database_connection.prepare_cached("SELECT DISTINCT manga_name FROM manga_panels")?;
+        database_connection.prepare("SELECT DISTINCT manga_name FROM manga_panels")?;
     let manga_names = statement
         .query_map([], |row| row.get(0))?
         .collect::<Result<Vec<String>>>()?;
