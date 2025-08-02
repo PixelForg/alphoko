@@ -1,13 +1,13 @@
 use eframe::egui::{
-    self, Align, Button, Color32, Layout, Popup, PopupCloseBehavior, RichText, TopBottomPanel, Ui,
-    vec2,
+    self, Align, Button, Color32, Layout, Popup, PopupCloseBehavior, RichText, ScrollArea,
+    TopBottomPanel, Ui, vec2,
 };
 use rfd::FileDialog;
 
 use crate::{
     app::MyApp,
     ui::{
-        common::{draw_default_frame, draw_search_bar},
+        common::{draw_default_frame, draw_search_bar, get_manga_names_options},
         constants::TOP_PANEL_ELEMENTS_HEIGHT,
     },
 };
@@ -60,12 +60,25 @@ impl MyApp {
                             true,
                         );
                         if let Some(response) = search_bar_response {
+                            let manga_names_with_score = get_manga_names_options(
+                                &self.manga_names_list,
+                                &self.manga_name_search_text,
+                            );
                             Popup::menu(&response)
-                                .open(!self.manga_name_search_text.is_empty())
+                                .open(
+                                    !self.manga_name_search_text.is_empty()
+                                        && !manga_names_with_score.is_empty(),
+                                )
                                 .close_behavior(PopupCloseBehavior::IgnoreClicks)
                                 .show(|ui| {
                                     ui.set_min_width(310.0);
-                                    ui.label("This popup opened kek");
+                                    ScrollArea::vertical().show(ui, |ui| {
+                                        for manga_name in manga_names_with_score {
+                                            if ui.button(&manga_name.1).clicked() {
+                                                self.manga_name_search_text = manga_name.1;
+                                            }
+                                        }
+                                    });
                                 });
                         }
                         self.draw_add_image_button(ui, window_width * 0.10);
