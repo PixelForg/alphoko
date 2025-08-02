@@ -5,15 +5,20 @@ use eframe::egui::{
 };
 
 use crate::db::{
-    MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db, retrieve_manga_panels_from_db,
+    MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db,
+    retrieve_manga_panels_from_db, retrieve_manga_panels_text_from_db,
 };
-use crate::ui::common::{draw_search_bar, get_manga_names_options};
+use crate::ui::common::{draw_search_bar, get_fuzzy_search_options};
 use crate::{app::MyApp, ui::constants::MANGA_PANELS_SAVE_FOLDER};
 
 impl MyApp {
     fn refresh_manga_names_list_from_db(&mut self) {
         self.manga_names_list =
             retrieve_manga_names_from_db(&self.database_connection).unwrap_or(Default::default());
+    }
+    fn refresh_manga_panels_keywords_list_from_db(&mut self) {
+        self.manga_panels_text_list = retrieve_manga_panels_text_from_db(&self.database_connection)
+            .unwrap_or(Default::default())
     }
 
     fn clear_image_state(&mut self, ctx: &egui::Context, image_uri: &String) {
@@ -24,7 +29,7 @@ impl MyApp {
     }
 
     fn draw_manga_names_buttons_list(&mut self, ui: &mut Ui) {
-        let manga_names_with_score = get_manga_names_options(
+        let manga_names_with_score = get_fuzzy_search_options(
             &self.manga_names_list,
             &self.add_manga_panel_modal_manga_name,
         );
@@ -70,12 +75,13 @@ impl MyApp {
                                         Ok(_) => add_manga_panel_to_db(
                                             &self.database_connection,
                                             &manga_panel_file_path,
-                                            &self.added_image_text,
+                                            &self.added_image_text.trim().to_owned(),
                                             &self.add_manga_panel_modal_manga_name,
                                         ),
                                         Err(_) => panic!("Failed to copy file"),
                                     };
                                     self.refresh_manga_names_list_from_db();
+                                    self.refresh_manga_panels_keywords_list_from_db();
                                     self.clear_image_state(ctx, &uri);
                                 }
                             });

@@ -1,4 +1,7 @@
-use crate::db::{create_tables, retrieve_manga_names_from_db, start_connection};
+use crate::db::{
+    create_tables, retrieve_manga_names_from_db, retrieve_manga_panels_text_from_db,
+    start_connection,
+};
 use eframe::egui::{self, Color32, Visuals};
 use rusqlite::Connection;
 
@@ -10,6 +13,7 @@ pub struct MyApp {
     pub database_connection: Connection,
     pub add_manga_panel_modal_manga_name: String,
     pub manga_names_list: Vec<String>,
+    pub manga_panels_text_list: Vec<String>,
 }
 
 impl Default for MyApp {
@@ -17,6 +21,7 @@ impl Default for MyApp {
         let connection = start_connection().expect("Failed to start connection");
         create_tables(&connection).expect("Failed to create tables");
         let manga_names_list = retrieve_manga_names_from_db(&connection);
+        let manga_panels_text_list = retrieve_manga_panels_text_from_db(&connection);
         Self {
             keywords_search_text: Default::default(),
             manga_name_search_text: Default::default(),
@@ -25,6 +30,7 @@ impl Default for MyApp {
             database_connection: connection,
             add_manga_panel_modal_manga_name: Default::default(),
             manga_names_list: manga_names_list.unwrap_or(Default::default()),
+            manga_panels_text_list: manga_panels_text_list.unwrap_or(Default::default()),
         }
     }
 }

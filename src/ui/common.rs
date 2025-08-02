@@ -44,17 +44,17 @@ pub fn draw_search_bar(
     }
 }
 
-pub fn get_manga_names_options(
-    manga_names_list: &Vec<String>,
-    add_manga_panel_modal_manga_name: &String,
+pub fn get_fuzzy_search_options(
+    options: &Vec<String>,
+    search_query: &String,
 ) -> Vec<(i64, String)> {
-    let matcher = SkimMatcherV2::default();
-    let choices = manga_names_list;
+    let matcher = SkimMatcherV2::default().ignore_case();
+    let choices = options;
     let mut manga_names_with_score: Vec<(i64, String)> = choices
         .iter()
         .filter_map(|item| {
             matcher
-                .fuzzy_match(item, add_manga_panel_modal_manga_name)
+                .fuzzy_match(item, search_query)
                 .map(|score| (score, item.clone()))
         })
         .collect();

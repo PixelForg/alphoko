@@ -7,7 +7,7 @@ use rfd::FileDialog;
 use crate::{
     app::MyApp,
     ui::{
-        common::{draw_default_frame, draw_search_bar, get_manga_names_options},
+        common::{draw_default_frame, draw_search_bar, get_fuzzy_search_options},
         constants::TOP_PANEL_ELEMENTS_HEIGHT,
     },
 };
@@ -45,22 +45,44 @@ impl MyApp {
                 ui.horizontal(|ui| {
                     let window_width = ui.available_rect_before_wrap().width();
                     ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                        draw_search_bar(
+                        let manga_keywords_search_bar_response = draw_search_bar(
                             ui,
                             window_width * 0.50,
                             &mut self.keywords_search_text,
                             &"Enter Keywords".to_owned(),
-                            false,
+                            true,
                         );
-                        let search_bar_response = draw_search_bar(
+                        if let Some(response) = manga_keywords_search_bar_response {
+                            let manga_keywords_list_with_score = get_fuzzy_search_options(
+                                &self.manga_panels_text_list,
+                                &self.keywords_search_text,
+                            );
+                            Popup::menu(&response)
+                                .open(
+                                    !self.keywords_search_text.is_empty()
+                                        && !manga_keywords_list_with_score.is_empty(),
+                                )
+                                .close_behavior(PopupCloseBehavior::IgnoreClicks)
+                                .show(|ui| {
+                                    ui.set_min_width(310.0);
+                                    ScrollArea::vertical().show(ui, |ui| {
+                                        for manga_panel_keywords in manga_keywords_list_with_score {
+                                            if ui.button(&manga_panel_keywords.1).clicked() {
+                                                self.keywords_search_text = manga_panel_keywords.1;
+                                            }
+                                        }
+                                    })
+                                });
+                        }
+                        let manga_name_search_bar_response = draw_search_bar(
                             ui,
                             window_width * 0.35,
                             &mut self.manga_name_search_text,
                             &"Enter Keywords".to_owned(),
                             true,
                         );
-                        if let Some(response) = search_bar_response {
-                            let manga_names_with_score = get_manga_names_options(
+                        if let Some(response) = manga_name_search_bar_response {
+                            let manga_names_with_score = get_fuzzy_search_options(
                                 &self.manga_names_list,
                                 &self.manga_name_search_text,
                             );
