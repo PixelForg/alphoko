@@ -1,8 +1,10 @@
 use std::fs;
 
 use eframe::egui::{
-    self, Align, CentralPanel, Context, Image, Layout, Modal, ScrollArea, TextEdit, Ui, Vec2,
+    self, Align, CentralPanel, Color32, ColorImage, Context, Image, Layout, Modal, ScrollArea,
+    TextEdit, Ui, Vec2,
 };
+use image::{ImageError, ImageReader};
 
 use crate::db::{
     MangaPanels, add_manga_panel_to_db, retrieve_manga_names_from_db,
@@ -104,6 +106,35 @@ impl MyApp {
         }
     }
 
+    fn load_image_from_path(
+        &self,
+        manga_panel_file_path: &String,
+    ) -> Result<ColorImage, ImageError> {
+        let dynamic_image = ImageReader::open(manga_panel_file_path)?
+            /*
+            This is needed because even if the file is .png, it might actually be a jpg.
+            Which will cause a panic here
+            */
+            .with_guessed_format()?
+            .decode()?;
+        let size = [
+            dynamic_image.width() as usize,
+            dynamic_image.height() as usize,
+        ];
+        let image_buffer = dynamic_image.to_rgba8();
+        let pixels: Vec<Color32> = image_buffer
+            .pixels()
+            .map(|p| Color32::from_rgba_premultiplied(p[0], p[1], p[2], p[3]))
+            .collect();
+
+        let color_image = ColorImage {
+            size,
+            pixels,
+            source_size: Default::default(),
+        };
+        Ok(color_image)
+    }
+
     fn draw_manga_panels_gallery(&mut self, ui: &mut Ui, ctx: &Context) {
         if !self.keywords_search_text.is_empty() {
             let manga_panels = retrieve_manga_panels_from_db(
@@ -121,12 +152,20 @@ impl MyApp {
                                     manga_panel_file_path,
                                     ..
                                 } = manga_panel;
-                                let uri = format!("file://{}", &manga_panel_file_path);
-                                let image = Image::new(&uri)
-                                    // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
-                                    .fit_to_original_size(1.0)
-                                    .max_height(300.0);
-                                ui.add(image);
+                                let color_image = self.load_image_from_path(&manga_panel_file_path);
+                                if let Ok(manga_panel) = color_image {
+                                    let texture = ui.ctx().load_texture(
+                                        "manga_panel", // TODO: Probably need unique name here
+                                        manga_panel.clone(),
+                                        Default::default(),
+                                    );
+                                    if ui
+                                        .button(Image::from_texture(&texture).max_height(300.0))
+                                        .clicked()
+                                    {
+                                        ui.ctx().copy_image(manga_panel);
+                                    }
+                                }
                             }
                         });
                     });
