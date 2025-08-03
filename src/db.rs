@@ -71,7 +71,7 @@ pub fn retrieve_manga_panels_from_db(
     let mut statement = database_connection.prepare_cached(
         "SELECT manga_panel_file_path, manga_panel_text, number_of_times_copied, manga_name
         FROM manga_panels
-        WHERE manga_panel_text = ?1
+        WHERE manga_panel_text LIKE '%' || ?1 || '%'
         AND (?2 = '' OR manga_name = ?2)",
     )?;
     let manga_panels_from_db = statement.query_map(

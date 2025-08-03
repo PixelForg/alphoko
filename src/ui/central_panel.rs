@@ -105,44 +105,45 @@ impl MyApp {
     }
 
     fn draw_manga_panels_gallery(&mut self, ui: &mut Ui, ctx: &Context) {
-        let manga_panels = retrieve_manga_panels_from_db(
-            &self.database_connection,
-            &self.keywords_search_text,
-            &self.manga_name_search_text,
-        );
-        match manga_panels {
-            Ok(manga_panels_vec) => {
-                // TODO : Fix scrollbar
-                ScrollArea::vertical().show(ui, |ui| {
-                    ui.horizontal_wrapped(|ui| {
-                        for manga_panel in &manga_panels_vec {
-                            let MangaPanels {
-                                manga_panel_file_path,
-                                ..
-                            } = manga_panel;
-                            let uri = format!("file://{}", &manga_panel_file_path);
-                            let image = Image::new(&uri)
-                                // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
-                                .fit_to_original_size(1.0)
-                                .max_height(200.0);
-                            ui.add(image);
-                        }
+        if !self.keywords_search_text.is_empty() {
+            let manga_panels = retrieve_manga_panels_from_db(
+                &self.database_connection,
+                &self.keywords_search_text,
+                &self.manga_name_search_text,
+            );
+            match manga_panels {
+                Ok(manga_panels_vec) => {
+                    // TODO : Fix scrollbar
+                    ScrollArea::vertical().show(ui, |ui| {
+                        ui.horizontal_wrapped(|ui| {
+                            for manga_panel in &manga_panels_vec {
+                                let MangaPanels {
+                                    manga_panel_file_path,
+                                    ..
+                                } = manga_panel;
+                                let uri = format!("file://{}", &manga_panel_file_path);
+                                let image = Image::new(&uri)
+                                    // Not sure why but I need to add this otherwise the images are very small for some reason, like icons
+                                    .fit_to_original_size(1.0)
+                                    .max_height(300.0);
+                                ui.add(image);
+                            }
+                        });
                     });
-                });
 
-                if self.keywords_search_text.is_empty() && self.added_image_file_path.is_empty() {
-                    ctx.forget_all_images();
+                    if self.keywords_search_text.is_empty() && self.added_image_file_path.is_empty()
+                    {
+                        ctx.forget_all_images();
+                    }
                 }
+                Err(err) => println!("{}", err),
             }
-            Err(err) => println!("{}", err),
         }
     }
 
     pub fn draw_central_panel(&mut self, ctx: &Context) {
         CentralPanel::default().show(ctx, |ui| {
             self.draw_add_manga_panel_modal(ctx);
-            ui.label(&self.keywords_search_text);
-            ui.label(&self.manga_name_search_text);
             /*
             Initially I had put this under a condition and I was negating the
             condition when I was done showing the images, however that just made
