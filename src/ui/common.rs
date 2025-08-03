@@ -2,7 +2,7 @@ use eframe::egui::{Color32, CornerRadius, Frame, Response, Stroke, TextEdit, Ui}
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-use crate::ui::constants::TOP_PANEL_ELEMENTS_HEIGHT;
+use crate::ui::constants::SIDE_PANEL_ELEMENTS_HEIGHT;
 
 pub fn draw_default_frame() -> Frame {
     Frame::new()
@@ -20,7 +20,6 @@ pub fn draw_default_frame() -> Frame {
 
 pub fn draw_search_bar(
     ui: &mut Ui,
-    width: f32,
     search_text_to_edit: &mut String,
     default_text: &String,
     need_response: bool,
@@ -28,10 +27,9 @@ pub fn draw_search_bar(
     let text_edit_response = draw_default_frame()
         .fill(Color32::from_rgb(23, 23, 23))
         .show(ui, |ui| {
-            ui.set_height(TOP_PANEL_ELEMENTS_HEIGHT);
+            ui.set_height(SIDE_PANEL_ELEMENTS_HEIGHT);
             ui.add(
                 TextEdit::singleline(search_text_to_edit)
-                    .desired_width(width)
                     .hint_text(default_text)
                     .frame(false),
             );

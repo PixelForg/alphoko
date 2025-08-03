@@ -4,7 +4,7 @@ mod ui {
     pub mod central_panel;
     pub mod common;
     pub mod constants;
-    pub mod top_panel;
+    pub mod side_panel;
 }
 
 use crate::app::MyApp;

@@ -93,7 +93,6 @@ impl MyApp {
                     ui.with_layout(Layout::top_down(Align::TOP), |ui| {
                         draw_search_bar(
                             ui,
-                            300.0,
                             &mut self.add_manga_panel_modal_manga_name,
                             &"Add manga name".to_owned(),
                             false,

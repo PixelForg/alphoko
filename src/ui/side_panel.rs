@@ -1,6 +1,6 @@
 use eframe::egui::{
-    self, Align, Button, Color32, Layout, Popup, PopupCloseBehavior, Response, RichText,
-    ScrollArea, TopBottomPanel, Ui, vec2,
+    Button, Color32, Context, Popup, PopupCloseBehavior, Response, RichText, ScrollArea, SidePanel,
+    Ui, vec2,
 };
 use rfd::FileDialog;
 
@@ -8,14 +8,13 @@ use crate::{
     app::MyApp,
     ui::{
         common::{draw_default_frame, draw_search_bar, get_fuzzy_search_options},
-        constants::{AUTOCOMPLETE_POPUP_MAX_HEIGHT, TOP_PANEL_ELEMENTS_HEIGHT},
+        constants::{AUTOCOMPLETE_POPUP_MAX_HEIGHT, SIDE_PANEL_ELEMENTS_HEIGHT},
     },
 };
 
 impl MyApp {
-    fn draw_add_image_button(&mut self, ui: &mut Ui, width: f32) {
+    fn draw_add_image_button(&mut self, ui: &mut Ui) {
         draw_default_frame().fill(Color32::WHITE).show(ui, |ui| {
-            ui.set_width(width);
             // This is necessary to center text in button
             ui.vertical_centered(|ui| {
                 if ui
@@ -25,7 +24,7 @@ impl MyApp {
                                 .size(13.0)
                                 .color(Color32::BLACK),
                         )
-                        .min_size(vec2(120.0, TOP_PANEL_ELEMENTS_HEIGHT))
+                        .min_size(vec2(120.0, SIDE_PANEL_ELEMENTS_HEIGHT))
                         .frame(false),
                     )
                     .clicked()
@@ -104,41 +103,41 @@ impl MyApp {
         }
     }
 
-    pub fn draw_top_panel(&mut self, ctx: &egui::Context) {
-        TopBottomPanel::top("top_panel")
-            .show_separator_line(false)
+    pub fn draw_side_panel(&mut self, ctx: &Context) {
+        SidePanel::left("search-panel")
+            .exact_width(300.0)
             .show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    let window_width = ui.available_rect_before_wrap().width();
-                    let manga_keywords_search_bar_width = window_width * 0.50;
-                    let manga_name_search_bar_width = window_width * 0.35;
-                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                        let manga_keywords_search_bar_response = draw_search_bar(
-                            ui,
-                            manga_keywords_search_bar_width,
-                            &mut self.keywords_search_text,
-                            &"Enter Keywords".to_owned(),
-                            true,
-                        );
-                        self.draw_keywords_search_popup(
-                            manga_keywords_search_bar_response,
-                            manga_keywords_search_bar_width,
-                        );
-                        let manga_name_search_bar_response = draw_search_bar(
-                            ui,
-                            manga_name_search_bar_width,
-                            &mut self.manga_name_search_text,
-                            &"Enter Keywords".to_owned(),
-                            true,
-                        );
-                        self.draw_manga_names_search_popup(
-                            manga_name_search_bar_response,
-                            manga_name_search_bar_width,
-                        );
-                        self.draw_add_image_button(ui, window_width * 0.10);
-                    })
+                ui.vertical_centered_justified(|ui| {
+                    let window_width = ui.available_width();
+                    let height = ui.available_height();
+                    println!("{}", height);
+                    // TODO : Try to get the popups to have same width as search bar
+                    let manga_keywords_search_bar_width = window_width * 0.25;
+                    let manga_name_search_bar_width = window_width * 0.25;
+                    let manga_keywords_search_bar_response = draw_search_bar(
+                        ui,
+                        &mut self.keywords_search_text,
+                        &"Enter Keywords".to_owned(),
+                        true,
+                    );
+                    self.draw_keywords_search_popup(
+                        manga_keywords_search_bar_response,
+                        manga_keywords_search_bar_width,
+                    );
+                    ui.add_space((height - 140.0) / 2.0);
+                    let manga_name_search_bar_response = draw_search_bar(
+                        ui,
+                        &mut self.manga_name_search_text,
+                        &"Enter Keywords".to_owned(),
+                        true,
+                    );
+                    self.draw_manga_names_search_popup(
+                        manga_name_search_bar_response,
+                        manga_name_search_bar_width,
+                    );
+                    ui.add_space((height - 140.0) / 2.0);
+                    self.draw_add_image_button(ui);
                 });
-                ui.label(&self.added_image_file_path);
             });
     }
 }

@@ -46,7 +46,7 @@ impl eframe::App for MyApp {
             override_text_color: Some(Color32::WHITE),
             ..Default::default()
         });
-        self.draw_top_panel(ctx);
+        self.draw_side_panel(ctx);
         self.draw_central_panel(ctx);
     }
 }
