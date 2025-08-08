@@ -76,7 +76,7 @@ impl MyApp {
                                     ) {
                                         Ok(_) => add_manga_panel_to_db(
                                             &self.database_connection,
-                                            &manga_panel_file_path,
+                                            &file_name.unwrap_or("image.jpg").to_owned(),
                                             &self.added_image_text.trim().to_owned(),
                                             &self.add_manga_panel_modal_manga_name,
                                         ),
@@ -148,10 +148,9 @@ impl MyApp {
                     ScrollArea::vertical().show(ui, |ui| {
                         ui.horizontal_wrapped(|ui| {
                             for manga_panel in &manga_panels_vec {
-                                let MangaPanels {
-                                    manga_panel_file_path,
-                                    ..
-                                } = manga_panel;
+                                let MangaPanels { file_name, .. } = manga_panel;
+                                let manga_panel_file_path =
+                                    format!("{}/{}", MANGA_PANELS_SAVE_FOLDER, file_name);
                                 let color_image = self.load_image_from_path(&manga_panel_file_path);
                                 if let Ok(manga_panel) = color_image {
                                     let texture = ui.ctx().load_texture(
